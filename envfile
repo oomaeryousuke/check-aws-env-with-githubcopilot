@@ -1,8 +1,5 @@
 #!/bin/bash
 
-# アカウント ID
-export AccountId="000011112222"
-
 # システム名
 export Prefix="blog"
 
