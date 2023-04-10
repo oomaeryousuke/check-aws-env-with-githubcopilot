@@ -1,0 +1,155 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "Root CloudFormation template."
+
+# ------------------------------------------------------------#
+# Metadata
+# ------------------------------------------------------------#
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      - Label:
+          default: "Common Parameters"
+        Parameters:
+          - Prefix
+          - Environment
+      - Label:
+          default: "Option Parameters"
+        Parameters:
+          - MultiAz
+      - Label:
+          default: "VPC Configuration"
+        Parameters:
+          - VpcCidrBlock
+      - Label:
+          default: "Subnet Configuration"
+        Parameters:
+          - SubnetCidrBlockPublic1a
+          - SubnetCidrBlockPublic1c
+          - SubnetCidrBlockProtected1a
+          - SubnetCidrBlockProtected1c
+          - SubnetCidrBlockPrivate1a
+          - SubnetCidrBlockPrivate1c
+      - Label:
+          default: "CloudFormation Template URL"
+        Parameters:
+          - TemplateS3Path
+
+# ------------------------------------------------------------#
+# Parameters
+# ------------------------------------------------------------#
+Parameters: 
+  # 共通
+  Prefix:
+    Type: "String"
+    Default: "sample"
+  Environment:
+    Type: "String"
+    Default: "local"
+
+  # オプション選択
+  MultiAz:
+    Type: "String"
+    Default: "true"
+    AllowedValues:
+      - "true"
+      - "false"
+
+  # VPC
+  VpcCidrBlock:
+    Type: "String"
+    Default: "10.10.0.0/16"
+  
+  # Subnet
+  SubnetCidrBlockPublic1a:
+    Type: "String"
+    Default: "10.10.1.0/24"
+  SubnetCidrBlockPublic1c:
+    Type: "String"
+    Default: "10.10.2.0/24"
+  SubnetCidrBlockProtected1a:
+    Type: "String"
+    Default: "10.10.4.0/24"
+  SubnetCidrBlockProtected1c:
+    Type: "String"
+    Default: "10.10.8.0/24"
+  SubnetCidrBlockPrivate1a:
+    Type: "String"
+    Default: "10.10.16.0/24"
+  SubnetCidrBlockPrivate1c:
+    Type: "String"
+    Default: "10.10.32.0/24"
+
+  # CloudFormation Template S3 Bucket
+  TemplateS3Path:
+    Type: "String"
+    Default: "https://bucketname.s3.ap-northeast-1.amazonaws.com"
+
+# ------------------------------------------------------------#
+# Conditions
+# ------------------------------------------------------------#
+Conditions:
+  # シングルAZの場合、true
+  IsSingleAz:
+    !Equals
+      - !Ref MultiAz
+      - "false"
+  # マルチAZの場合、true
+  IsMultiAz:
+    !Equals
+      - !Ref MultiAz
+      - "true"
+
+# ------------------------------------------------------------#
+# Resources
+# ------------------------------------------------------------#
+Resources:
+  # VPC / VPC フローログ / フローログ用 S3 バケット
+  Vpc:
+    Type: "AWS::CloudFormation::Stack"
+    Properties:
+      TemplateURL: !Sub "${TemplateS3Path}/vpc.yml"
+      Parameters:
+        Prefix: !Ref Prefix
+        Environment: !Ref Environment
+        VpcCidrBlock: !Ref VpcCidrBlock
+
+  # Subnetの作成
+  Subnet:
+    Type: "AWS::CloudFormation::Stack"
+    Properties:
+      TemplateURL: !Sub "${TemplateS3Path}/subnet.yml"
+      Parameters: 
+        Prefix: !Ref Prefix
+        Environment: !Ref Environment
+        VpcId: !GetAtt Vpc.Outputs.Vpc
+        SubnetCidrBlockPublic1a: !Ref SubnetCidrBlockPublic1a
+        SubnetCidrBlockPublic1c: !Ref SubnetCidrBlockPublic1c
+        SubnetCidrBlockProtected1a: !Ref SubnetCidrBlockProtected1a
+        SubnetCidrBlockProtected1c: !Ref SubnetCidrBlockProtected1c
+        SubnetCidrBlockPrivate1a: !Ref SubnetCidrBlockPrivate1a
+        SubnetCidrBlockPrivate1c: !Ref SubnetCidrBlockPrivate1c
+    DependsOn: Vpc
+  
+  # IGW
+  Igw:
+    Type: "AWS::CloudFormation::Stack"
+    Properties:
+      TemplateURL: !Sub "${TemplateS3Path}/igw.yml"
+      Parameters:
+        Prefix: !Ref Prefix
+        Environment: !Ref Environment
+        VpcId: !GetAtt Vpc.Outputs.Vpc
+    DependsOn: Vpc
+  
+  # NAT Gateway / NAT Gateway 用 EIP
+  Ngw:
+    Type: "AWS::CloudFormation::Stack"
+    Properties:
+      TemplateURL: !Sub "${TemplateS3Path}/ngw.yml"
+      Parameters:
+        Prefix: !Ref Prefix
+        Environment: !Ref Environment
+        MultiAz: !Ref MultiAz
+        SubnetPublic1aId: !GetAtt Subnet.Outputs.SubnetPublic1a
+        SubnetPublic1cId: !GetAtt Subnet.Outputs.SubnetPublic1c
+    DependsOn: Subnet

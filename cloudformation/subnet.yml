@@ -1,0 +1,136 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "Create Subnet"
+
+# ------------------------------------------------------------#
+# Parameters
+# ------------------------------------------------------------#
+Parameters:
+  Prefix:
+    Type: "String"
+  Environment:
+    Type: "String"
+  VpcId:
+    Type: "String"
+  SubnetCidrBlockPublic1a:
+    Type: "String"
+  SubnetCidrBlockPublic1c:
+    Type: "String"
+  SubnetCidrBlockProtected1a:
+    Type: "String"
+  SubnetCidrBlockProtected1c:
+    Type: "String"
+  SubnetCidrBlockPrivate1a:
+    Type: "String"
+  SubnetCidrBlockPrivate1c:
+    Type: "String"
+
+# ------------------------------------------------------------#
+# Mappings
+# ------------------------------------------------------------#
+Mappings:
+  RegionMap:
+    # 東京
+    ap-northeast-1:
+      Az1: "ap-northeast-1a"
+      Az2: "ap-northeast-1c"
+
+# ------------------------------------------------------------#
+# Resources
+# ------------------------------------------------------------#
+Resources:
+  # ------------------------------------------------------------#
+  # Subnet
+  # サブネットのタイプは Public / Protected / Private
+  # ------------------------------------------------------------#
+  ## Public
+  SubnetPublic1a:
+    Type: "AWS::EC2::Subnet"
+    Properties: 
+      AvailabilityZone: !FindInMap [ RegionMap, !Ref "AWS::Region", Az1 ]
+      CidrBlock: !Ref SubnetCidrBlockPublic1a
+      MapPublicIpOnLaunch: false
+      Tags: 
+        - Key: "Name"
+          Value: !Sub "${Prefix}-${Environment}-subnet-public-1a"
+      VpcId: !Ref VpcId
+  SubnetPublic1c:
+    Type: "AWS::EC2::Subnet"
+    Properties: 
+      AvailabilityZone: !FindInMap [ RegionMap, !Ref "AWS::Region", Az2 ]
+      CidrBlock: !Ref SubnetCidrBlockPublic1c
+      MapPublicIpOnLaunch: false
+      Tags: 
+        - Key: "Name"
+          Value: !Sub "${Prefix}-${Environment}-subnet-public-1c"
+      VpcId: !Ref VpcId
+  ## Protected
+  SubnetProtected1a:
+    Type: "AWS::EC2::Subnet"
+    Properties: 
+      AvailabilityZone: !FindInMap [ RegionMap, !Ref "AWS::Region", Az1 ]
+      CidrBlock: !Ref SubnetCidrBlockProtected1a
+      MapPublicIpOnLaunch: false
+      Tags: 
+        - Key: "Name"
+          Value: !Sub "${Prefix}-${Environment}-subnet-protected-1a"
+      VpcId: !Ref VpcId
+  SubnetProtected1c:
+    Type: "AWS::EC2::Subnet"
+    Properties: 
+      AvailabilityZone: !FindInMap [ RegionMap, !Ref "AWS::Region", Az2 ]
+      CidrBlock: !Ref SubnetCidrBlockProtected1c
+      MapPublicIpOnLaunch: false
+      Tags: 
+        - Key: "Name"
+          Value: !Sub "${Prefix}-${Environment}-subnet-protected-1c"
+      VpcId: !Ref VpcId
+  ## Private
+  SubnetPrivate1a:
+    Type: "AWS::EC2::Subnet"
+    Properties: 
+      AvailabilityZone: !FindInMap [ RegionMap, !Ref "AWS::Region", Az1 ]
+      CidrBlock: !Ref SubnetCidrBlockPrivate1a
+      MapPublicIpOnLaunch: false
+      Tags: 
+        - Key: "Name"
+          Value: !Sub "${Prefix}-${Environment}-subnet-private-1a"
+      VpcId: !Ref VpcId
+  SubnetPrivate1c:
+    Type: "AWS::EC2::Subnet"
+    Properties: 
+      AvailabilityZone: !FindInMap [ RegionMap, !Ref "AWS::Region", Az2 ]
+      CidrBlock: !Ref SubnetCidrBlockPrivate1c
+      MapPublicIpOnLaunch: false
+      Tags: 
+        - Key: "Name"
+          Value: !Sub "${Prefix}-${Environment}-subnet-private-1c"
+      VpcId: !Ref VpcId
+
+# ------------------------------------------------------------#
+# Outputs
+# ------------------------------------------------------------#
+Outputs:
+  SubnetPublic1a:
+    Value: !Ref SubnetPublic1a
+    Export:
+      Name: !Sub "${Prefix}-${Environment}-subnet-public-1a"
+  SubnetPublic1c:
+    Value: !Ref SubnetPublic1c
+    Export:
+      Name: !Sub "${Prefix}-${Environment}-subnet-public-1c"
+  SubnetProtected1a:
+    Value: !Ref SubnetProtected1a
+    Export:
+      Name: !Sub "${Prefix}-${Environment}-subnet-protected-1a"
+  SubnetProtected1c:
+    Value: !Ref SubnetProtected1c
+    Export:
+      Name: !Sub "${Prefix}-${Environment}-subnet-protected-1c"
+  SubnetPrivate1a:
+    Value: !Ref SubnetPrivate1a
+    Export:
+      Name: !Sub "${Prefix}-${Environment}-subnet-private-1a"
+  SubnetPrivate1c:
+    Value: !Ref SubnetPrivate1c
+    Export:
+      Name: !Sub "${Prefix}-${Environment}-subnet-private-1c"

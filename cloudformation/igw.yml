@@ -1,0 +1,42 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "Create IGW"
+
+# ------------------------------------------------------------#
+# Parameters
+# ------------------------------------------------------------#
+Parameters:
+  Prefix:
+    Type: "String"
+  Environment:
+    Type: "String"
+  VpcId:
+    Type: "String"
+
+# ------------------------------------------------------------#
+# Resources
+# ------------------------------------------------------------#
+Resources:
+  # ------------------------------------------------------------#
+  # Internet Gateway
+  # 作成済みのVPCにアタッチ
+  # ------------------------------------------------------------#
+  InternetGateway:
+    Type: "AWS::EC2::InternetGateway"
+    Properties: 
+      Tags: 
+        - Key: "Name"
+          Value: !Sub "${Prefix}-${Environment}-igw"
+  InternetGatewayAttachment:
+    Type: "AWS::EC2::VPCGatewayAttachment"
+    Properties: 
+      InternetGatewayId: !Ref InternetGateway
+      VpcId: !Ref VpcId
+
+# ------------------------------------------------------------#
+# Outputs
+# ------------------------------------------------------------#
+Outputs:
+  InternetGateway:
+    Value: !Ref InternetGateway
+    Export:
+      Name: !Sub "${Prefix}-${Environment}-igw"

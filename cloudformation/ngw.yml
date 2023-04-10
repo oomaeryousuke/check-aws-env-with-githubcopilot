@@ -1,0 +1,82 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "Create NAT Gateway"
+
+# ------------------------------------------------------------#
+# Parameters
+# ------------------------------------------------------------#
+Parameters:
+  Prefix:
+    Type: "String"
+  Environment:
+    Type: "String"
+  SubnetPublic1aId:
+    Type: "String"
+  SubnetPublic1cId:
+    Type: "String"
+  MultiAz:
+    Type: "String"
+
+# ------------------------------------------------------------#
+# Conditions
+# ------------------------------------------------------------#
+Conditions:
+  # マルチAZの場合、true
+  IsMultiAz:
+    !Equals
+      - !Ref MultiAz
+      - "true"
+
+# ------------------------------------------------------------#
+# Resources
+# ------------------------------------------------------------#
+Resources:
+  # ------------------------------------------------------------#
+  # Nat Gateway
+  # シングルAZの場合は1AZのみに作成
+  # ------------------------------------------------------------#
+  NatGateway1a:
+    Type: "AWS::EC2::NatGateway"
+    Properties: 
+      AllocationId: !GetAtt NatGatewayEip1a.AllocationId
+      SubnetId: !Ref SubnetPublic1aId
+      Tags: 
+        - Key: "Name"
+          Value: !Sub "${Prefix}-${Environment}-ngw-1a"
+  NatGatewayEip1a:
+    Type: "AWS::EC2::EIP"
+    Properties:
+      Domain: "vpc"
+      Tags: 
+        - Key: "Name"
+          Value: !Sub "${Prefix}-${Environment}-ngw-eip-1a"
+  NatGateway1c:
+    Type: "AWS::EC2::NatGateway"
+    Condition: IsMultiAz #マルチAZの場合のみ作成
+    Properties: 
+      AllocationId: !GetAtt NatGatewayEip1c.AllocationId
+      SubnetId: !Ref SubnetPublic1cId
+      Tags: 
+        - Key: "Name"
+          Value: !Sub "${Prefix}-${Environment}-ngw-1c"
+  NatGatewayEip1c:
+    Type: "AWS::EC2::EIP"
+    Condition: IsMultiAz #マルチAZの場合のみ作成
+    Properties:
+      Domain: "vpc"
+      Tags: 
+        - Key: "Name"
+          Value: !Sub "${Prefix}-${Environment}-ngw-eip-1c"
+
+# ------------------------------------------------------------#
+# Outputs
+# ------------------------------------------------------------#
+Outputs:
+  NatGateway1a:
+    Value: !Ref NatGateway1a
+    Export:
+      Name: !Sub "${Prefix}-${Environment}-ngw-1a"
+  NatGateway1c:
+    Condition: IsMultiAz
+    Value: !Ref NatGateway1c
+    Export:
+      Name: !Sub "${Prefix}-${Environment}-ngw-1c"

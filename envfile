@@ -1,0 +1,24 @@
+#!/bin/bash
+
+# アカウント ID
+export AccountId="000011112222"
+
+# システム名
+export Prefix="blog"
+
+# 環境名
+export Environment="sample"
+
+# マルチAZ or シングルAZ（ true | false ）
+export MultiAz="false"
+
+# VPC CIDR
+export VpcCidrBlock="10.10.0.0/16"
+
+# Subnet CIDR
+export SubnetCidrBlockPublic1a="10.10.1.0/24"
+export SubnetCidrBlockPublic1c="10.10.2.0/24"
+export SubnetCidrBlockProtected1a="10.10.4.0/24"
+export SubnetCidrBlockProtected1c="10.10.8.0/24"
+export SubnetCidrBlockPrivate1a="10.10.16.0/24"
+export SubnetCidrBlockPrivate1c="10.10.32.0/24"
